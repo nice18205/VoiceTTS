@@ -109,6 +109,14 @@ class Qwen3TTSModel:
         AutoModel.register(Qwen3TTSConfig, Qwen3TTSForConditionalGeneration)
         AutoProcessor.register(Qwen3TTSConfig, Qwen3TTSProcessor)
 
+        # Hugging Face repo ids cannot end with '/', but local paths can.
+        # Normalize obvious remote ids like "namespace/repo/" to avoid HFValidationError.
+        if isinstance(pretrained_model_name_or_path, str):
+            p = pretrained_model_name_or_path.strip()
+            if p.count("/") == 2 and p.endswith("/"):
+                p = p.rstrip("/")
+            pretrained_model_name_or_path = p
+
         model = AutoModel.from_pretrained(pretrained_model_name_or_path, **kwargs)
         if not isinstance(model, Qwen3TTSForConditionalGeneration):
             raise TypeError(
